@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Verified Career Portal</title>
+    <style>
+        :root {
+            --primary: #0066f5;
+            --primary-hover: #0052cc;
+            --success: #10b981;
+            --text-dark: #1f2937;
+            --text-muted: #4b5563;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; padding: 15px; margin: 0; }
+        .wrapper { max-width: 620px; margin: 30px auto; }
+        .job-card { background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02); position: relative; }
+        .badge-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .verified-badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 9999px; }
+        .live-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--success); font-weight: 600; }
+        .live-dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; display: inline-block; animation: pulse 1.8s infinite; }
+        h1 { font-size: 26px; font-weight: 700; color: #111827; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+        .meta-info { display: flex; gap: 12px; font-size: 14px; color: var(--text-muted); margin-bottom: 24px; font-weight: 500; }
+        hr { border: 0; border-top: 1px solid #edf2f7; margin: 24px 0; }
+        h3 { font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px; }
+        .body-text { font-size: 15px; color: #374151; margin-bottom: 20px; white-space: pre-wrap; }
+        .blur-container { position: relative; max-height: 180px; overflow: hidden; transition: max-height 0.4s ease; border-radius: 8px; }
+        .blur-container.unlocked { max-height: 2000px; overflow: visible; }
+        .blur-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; background: linear-gradient(to top, rgba(255,255,255,1) 15%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; }
+        .blur-container.unlocked .blur-overlay { display: none; }
+        .cta-group { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; text-decoration: none; border-radius: 10px; padding: 14px 24px; transition: all 0.15s ease; cursor: pointer; border: none; text-align: center; }
+        .btn:active { transform: scale(0.99); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-outline { background-color: white; color: #374151; border: 1px solid #d1d5db; }
+        .btn-outline:hover { background-color: #f9fafb; border-color: #9ca3af; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-secondary { background-color: #f1f5f9; color: var(--primary); font-size: 14px; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0; display: inline-flex; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .board-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 20px; }
+        .board-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #111827; }
+        .job-list { list-style: none; padding: 0; margin: 0; }
+        .job-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+        .job-item:last-child { border: none; }
+        .job-link { color: var(--primary); text-decoration: none; font-weight: 500; font-size: 14px; }
+        .job-link:hover { text-decoration: underline; }
+        .job-tag { font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; color: var(--text-muted); font-weight: 500; }
+        .loading { text-align: center; padding: 60px 0; font-size: 15px; color: var(--text-muted); font-weight: 500; }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div id="loader" class="loading">Establishing secure connection to portal feed...</div>
+    <div class="job-card" id="jobContainer" style="display:none;">
+        <div class="badge-row">
+            <div class="verified-badge">✓ Verified Portal Listing</div>
+            <div class="live-indicator"><span class="live-dot"></span> Actively Recruiting</div>
+        </div>
+        <h1 id="jobTitle">Position Title</h1>
+        <div class="meta-info">
+            <span id="jobCompany" style="color: #111827; font-weight:600;">Company</span>
+            <span>•</span>
+            <span id="jobLocation">Location</span>
+        </div>
+        <hr>
+        <h3>📋 Position Description</h3>
+        <p class="body-text" id="jobDesc">Loading roles...</p>
+        <hr>
+        <h3>🎯 Candidate Requirements & Qualifications</h3>
+        <div class="blur-container" id="blurWrapper">
+            <p class="body-text" id="jobReqs" style="margin:0; padding-bottom: 80px;"></p>
+            <div class="blur-overlay" id="interactiveTriggerZone">
+                <a href="https://omg10.com/4/11930015" target="_blank" id="smartlink1" class="btn btn-secondary" onclick="executeContentUnlock(event)">🔓 Expand Full Requirements Profile</a>
+            </div>
+        </div>
+        <hr>
+        <div class="cta-group" id="actionsLayout">
+            <a href="https://omg10.com/4/11930017" target="_blank" id="smartlink2" class="btn btn-primary" onclick="interceptConversion(event)">Apply Online</a>
+            <a href="#" target="_blank" id="officialApplyBtn" class="btn btn-outline">Go to Official Company Portal</a>
+            <a href="https://omg10.com/4/11930025" target="_blank" id="smartlink3" class="btn btn-success" onclick="interceptConversion(event)">Submit Application Checklist</a>
+        </div>
+    </div>
+    <div class="board-card" id="alternativeBoard" style="display:none;">
+        <div class="board-title">Alternative Openings You May Quality For</div>
+        <ul class="job-list" id="linksStack"></ul>
+    </div>
+</div>
+<script>
+    const MONETAG_LINK_1 = "https://omg10.com/4/11930015";
+    const MONETAG_LINK_2 = "https://omg10.com/4/11930017";
+    const MONETAG_LINK_3 = "https://omg10.com/4/11930025";
+    const MONETAG_LINK_4 = "https://omg10.com/4/9533281";
+    const MONETAG_LINK_5 = "https://omg10.com/4/9568630";
+
+    function interceptConversion(event) {
+        const convertingBefore = localStorage.getItem('anchor_conversion_checkpoint');
+        if (convertingBefore) {
+            event.currentTarget.href = document.getElementById('officialApplyBtn').href;
+        } else {
+            localStorage.setItem('anchor_conversion_checkpoint', 'true');
+        }
+    }
+
+    function executeContentUnlock(event) {
+        const wallUnlocked = localStorage.getItem('profile_wall_unlocked');
+        document.getElementById('blurWrapper').classList.add('unlocked');
+        if (wallUnlocked) {
+            event.currentTarget.href = MONETAG_LINK_5;
+        } else {
+            localStorage.setItem('profile_wall_unlocked', 'true');
+        }
+    }
+
+    function optimizeLayoutForTier1() {
+        try {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const tier1Zones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Dublin'];
+            const isTier1 = tier1Zones.some(zone => timezone.includes(zone)) || navigator.language.startsWith('en-US') || navigator.language.startsWith('en-GB');
+            if (isTier1) {
+                const layout = document.getElementById('actionsLayout');
+                const primaryBtn = document.getElementById('smartlink2');
+                layout.insertBefore(primaryBtn, layout.firstChild);
+            }
+        } catch (e) { console.log("Geo logic calibrated."); }
+    }
+
+    async function runPlatformBoot() {
+        const parameters = new URLSearchParams(window.location.search);
+        const activeSlug = parameters.get('job');
+        try {
+            const stream = await fetch('jobs.json');
+            const collection = await stream.json();
+            if (!collection || collection.length === 0) {
+                document.getElementById('loader').innerText = "System processing. Please hold...";
+                return;
+            }
+            const targetItem = activeSlug ? collection.find(i => i.id === activeSlug) : collection[0];
+            if (targetItem) {
+                document.getElementById('pageTitle').innerText = `${targetItem.title} - Career Selection`;
+                document.getElementById('jobTitle').innerText = targetItem.title;
+                document.getElementById('jobCompany').innerText = targetItem.company || "Verified Network Partner";
+                document.getElementById('jobLocation').innerText = targetItem.location || "Remote Deployment";
+                document.getElementById('jobDesc').innerText = targetItem.description;
+                document.getElementById('jobReqs').innerText = targetItem.requirements || "Standard verification requirements apply.";
+                document.getElementById('officialApplyBtn').href = targetItem.applyLink;
+                optimizeLayoutForTier1();
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('jobContainer').style.display = 'block';
+                buildAlternativeListings(collection, targetItem.id);
+            } else {
+                document.getElementById('loader').innerText = "Listing filled. Review recommendations below.";
+                buildAlternativeListings(collection, null);
+            }
+        } catch (err) { document.getElementById('loader').innerText = "Portal refresh required. Please wait."; }
+    }
+
+    function buildAlternativeListings(list, activeId) {
+        const container = document.getElementById('linksStack');
+        container.innerHTML = '';
+        const alternatives = list.filter(item => item.id !== activeId);
+        if (alternatives.length > 0) {
+            alternatives.slice(0, 5).forEach(job => {
+                const li = document.createElement('li');
+                li.className = 'job-item';
+                li.innerHTML = `
+                    <a class="job-link" href="?job=${job.id}" onclick="localStorage.removeItem('anchor_conversion_checkpoint'); localStorage.removeItem('profile_wall_unlocked'); window.open('${MONETAG_LINK_4}', '_blank');">
+                        ${job.title} – <span style="color:#555; font-weight:400;">${job.company}</span> ➔
+                    </a>
+                    <span class="job-tag">${job.location.split(' ')[0]}</span>
+                `;
+                container.appendChild(li);
+            });
+            document.getElementById('alternativeBoard').style.display = 'block';
+        }
+    }
+    window.onload = runPlatformBoot;
+</script>
+</body>
+</html>

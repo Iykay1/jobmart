@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Job Listing Entry</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; padding: 30px; margin:0; }
+        .panel { max-width: 650px; background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin: 0 auto; border: 1px solid #e2e8f0; }
+        h2 { margin-top: 0; color: #0f172a; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+        label { display: block; margin: 16px 0 6px; font-weight: 600; color: #334155; font-size: 14px; }
+        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; background-color: #f8fafc; color: #1e293b; }
+        textarea { height: 110px; resize: vertical; }
+        button { background: #0284c7; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 24px; width: 100%; }
+        button:hover { background: #0369a1; }
+        .box { background: #0f172a; color: #38bdf8; padding: 16px; border-radius: 6px; margin-top: 20px; white-space: pre-wrap; word-break: break-all; font-family: 'Courier New', monospace; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="panel">
+    <h2>Create Structured Job Entry</h2>
+    <label for="jobTitle">Job Title</label>
+    <input type="text" id="jobTitle" placeholder="e.g., Remote Virtual Assistant">
+    <label for="jobCompany">Hiring Company Name</label>
+    <input type="text" id="jobCompany" placeholder="e.g., Apex Virtual Solutions">
+    <label for="jobLocation">Geographic Scope / Location</label>
+    <input type="text" id="jobLocation" placeholder="e.g., Remote (US & Canada)">
+    <label for="jobDesc">Job Overview Description</label>
+    <textarea id="jobDesc" placeholder="Provide details about daily responsibilities, expectations..."></textarea>
+    <label for="jobReqs">Minimum Qualifications (One item per line)</label>
+    <textarea id="jobReqs" placeholder="• Basic knowledge of social media scheduling tools&#10;• Stable internet link access"></textarea>
+    <label for="companyLink">Direct Target Destination Application Link</label>
+    <input type="text" id="companyLink" placeholder="https://company-careers-portal.com/apply-now">
+    <button onclick="compileFormToJSON()">Generate Entry Payload</button>
+    <div id="outputFrame" style="display:none;">
+        <label>Append this data line inside your <code>jobs.json</code> file array:</label>
+        <div class="box" id="jsonOutput"></div>
+    </div>
+</div>
+<script>
+    function compileFormToJSON() {
+        const title = document.getElementById('jobTitle').value.trim();
+        const company = document.getElementById('jobCompany').value.trim();
+        const location = document.getElementById('jobLocation').value.trim();
+        const desc = document.getElementById('jobDesc').value.trim();
+        const reqs = document.getElementById('jobReqs').value.trim();
+        const link = document.getElementById('companyLink').value.trim();
+        if(!title || !company || !location || !desc || !reqs || !link) { alert('Please populate all inputs before compiling.'); return; }
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+        const nodePayload = { id: slug, title: title, company: company, location: location, description: desc, requirements: reqs, applyLink: link };
+        document.getElementById('jsonOutput').innerText = JSON.stringify(nodePayload, null, 2) + ",";
+        document.getElementById('outputFrame').style.display = 'block';
+    }
+</script>
+</body>
+</html>
